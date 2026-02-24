@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌍 World Radio</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    :root {
+      --bg-dark: #0a0e1a;
+      --bg-card-dark: #151b2e;
+      --bg-light: #f8fafc;
+      --bg-card-light: #ffffff;
+      --text-dark: #e2e8f0;
+      --text-light: #1e293b;
+      --accent: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --accent-hover: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      --success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      --warning: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --fav: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-dark);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-x: hidden;
+      padding-bottom: 120px;
+    }
+
+    body.player-minimized {
+      padding-bottom: 80px;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      background: rgba(21, 27, 46, 0.8);
+      backdrop-filter: blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    nav {
+      max-width: 1400px;
+      margin: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 30px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    nav h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    nav h1::before {
+      content: '';
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .menu {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-container {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #search,
+    #frequencySearch {
+      padding: 12px 20px;
+      border-radius: 50px;
+      border: 2px solid rgba(102, 126, 234, 0.3);
+      background: rgba(21, 27, 46, 0.6);
+      color: var(--text-dark);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.3s ease;
+      width: 220px;
+    }
+
+    #search:focus,
+    #frequencySearch:focus {
+      border-color: rgba(102, 126, 234, 0.8);
+      background: rgba(21, 27, 46, 0.9);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+    }
+
+    .menu button {
+      padding: 12px 24px;
+      border-radius: 50px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .menu button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.1);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .menu button:hover::before {
+      opacity: 1;
+    }
+
+    .menu button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    #favoritesMenu {
+      background: var(--fav);
+      color: #fff;
+    }
+
+    #toggleTheme {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    #countriesList {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 30px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .country-card {
+      background: rgba(21, 27, 46, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      margin-bottom: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .country-header {
+      padding: 20px 25px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .country-header:hover {
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .country-flag {
+      font-size: 2rem;
+      width: 50px;
+      text-align: center;
+    }
+
+    .country-info {
+      flex: 1;
+    }
+
+    .country-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .country-count {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .country-arrow {
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+      color: #667eea;
+    }
+
+    .country-card.open .country-arrow {
+      transform: rotate(90deg);
+    }
+
+    .country-stations {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
+    }
+
+    .country-card.open .country-stations {
+      max-height: 5000px;
+    }
+
+    .country-stations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 0 25px 25px 25px;
+    }
+
+    .stations {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+      padding: 30px;
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .station {
+      background: rgba(21, 27, 46, 0.6);
+      backdrop-filter: blur(10px);
+      padding: 25px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .station::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: -1;
+    }
+
+    .station:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+      border-color: rgba(102, 126, 234, 0.5);
+    }
+
+    .station:hover::before {
+      opacity: 0.05;
+    }
+
+    .station h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .station p {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .frequency-badge {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .station-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .station button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .listen {
+      background: var(--success);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+    }
+
+    .listen:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(17, 153, 142, 0.5);
+    }
+
+    .fav {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffd89b;
+      font-size: 1.3rem;
+      width: 50px;
+      flex: 0 0 50px;
+    }
+
+    .fav:hover {
+      background: var(--fav);
+      color: #fff;
+      transform: scale(1.1) rotate(10deg);
+    }
+
+    .player {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(10, 14, 26, 0.98);
+      backdrop-filter: blur(40px);
+      padding: 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+      z-index: 150;
+      animation: slideUp 0.4s ease;
+      transition: all 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+      }
+
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    .player.minimized .player-content {
+      padding: 12px 30px;
+    }
+
+    .player.minimized .player-top {
+      margin-bottom: 0;
+    }
+
+    .player.minimized .player-album {
+      width: 45px;
+      height: 45px;
+      font-size: 1.3rem;
+    }
+
+    .player.minimized .player-station-name {
+      font-size: 0.95rem;
+    }
+
+    .player.minimized .player-station-details,
+    .player.minimized .player-controls,
+    .player.minimized .playlist {
+      display: none !important;
+    }
+
+    .player-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px 30px;
+    }
+
+    .player-top {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .player-album {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+      animation: pulse 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    .player-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .player-station-name {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .player-station-details {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .player-station-details span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .player-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .player-minimize {
+      padding: 8px 16px;
+      border-radius: 50px;
+      border: none;
+      background: rgba(102, 126, 234, 0.2);
+      color: #667eea;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.85rem;
+    }
+
+    .player-minimize:hover {
+      background: rgba(102, 126, 234, 0.3);
+      transform: scale(1.05);
+    }
+
+    .player-close {
+      padding: 8px 16px;
+      border-radius: 50px;
+      border: none;
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.85rem;
+    }
+
+    .player-close:hover {
+      background: #ef4444;
+      color: #fff;
+      transform: scale(1.05);
+    }
+
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 12px;
+    }
+
+    .player-buttons {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .player-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .player-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    .player-btn-play {
+      width: 50px;
+      height: 50px;
+      background: var(--accent);
+      font-size: 1.3rem;
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .player-btn-play:hover {
+      box-shadow: 0 6px 30px rgba(102, 126, 234, 0.6);
+      transform: scale(1.15);
+    }
+
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      max-width: 180px;
+    }
+
+    .volume-icon {
+      color: #94a3b8;
+      font-size: 1rem;
+    }
+
+    .volume-slider {
+      flex: 1;
+      height: 4px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      outline: none;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(102, 126, 234, 0.5);
+    }
+
+    .volume-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 10px rgba(102, 126, 234, 0.5);
+    }
+
+    .player-visualizer {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 40px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .visualizer-bar {
+      width: 4px;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: height 0.05s ease-out;
+      height: 20%;
+    }
+
+    .playlist {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 15px 0;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(102, 126, 234, 0.5) transparent;
+    }
+
+    .playlist::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .playlist::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .playlist::-webkit-scrollbar-thumb {
+      background: rgba(102, 126, 234, 0.5);
+      border-radius: 10px;
+    }
+
+    .playlist .item {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px 20px;
+      border-radius: 50px;
+      cursor: pointer;
+      white-space: nowrap;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .playlist .item:hover {
+      background: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .playlist .item.active {
+      background: var(--accent);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    #favoritesOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 14, 26, 0.98);
+      backdrop-filter: blur(20px);
+      padding: 40px 20px;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+      z-index: 200;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    #favoritesOverlay h2 {
+      font-size: 2rem;
+      margin-bottom: 30px;
+      text-align: center;
+      background: var(--fav);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    #closeFav {
+      position: fixed;
+      top: 30px;
+      right: 30px;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 50px;
+      background: var(--warning);
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 201;
+    }
+
+    #closeFav:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+    }
+
+    #favoritesContainer {
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .favItem {
+      background: rgba(21, 27, 46, 0.8);
+      backdrop-filter: blur(10px);
+      padding: 20px 25px;
+      border-radius: 16px;
+      margin: 12px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .favItem:hover {
+      background: var(--fav);
+      color: #fff;
+      transform: translateX(10px);
+      box-shadow: 0 8px 25px rgba(255, 216, 155, 0.3);
+    }
+
+    body.light {
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
+
+    body.light::before {
+      background:
+        radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.05) 0%, transparent 50%);
+    }
+
+    body.light header {
+      background: rgba(255, 255, 255, 0.9);
+      border-bottom-color: rgba(0, 0, 0, 0.1);
+    }
+
+    body.light #search,
+    body.light #frequencySearch {
+      background: rgba(248, 250, 252, 0.9);
+      color: var(--text-light);
+      border-color: rgba(102, 126, 234, 0.2);
+    }
+
+    body.light .station,
+    body.light .country-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(0, 0, 0, 0.05);
+    }
+
+    body.light .station h2,
+    body.light .country-name,
+    body.light .player-station-name {
+      color: var(--text-light);
+    }
+
+    body.light .player {
+      background: rgba(255, 255, 255, 0.98);
+      border-top-color: rgba(0, 0, 0, 0.1);
+    }
+
+    body.light .favItem {
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--text-light);
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s linear infinite;
+    }
+
+    /* Sleep Timer Modal */
+    #sleepTimerModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 14, 26, 0.98);
+      backdrop-filter: blur(20px);
+      padding: 40px 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .timer-content {
+      background: rgba(21, 27, 46, 0.9);
+      backdrop-filter: blur(10px);
+      padding: 40px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .timer-content h2 {
+      font-size: 2rem;
+      margin-bottom: 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .timer-presets {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .timer-preset-btn {
+      padding: 15px;
+      border: 2px solid rgba(102, 126, 234, 0.3);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .timer-preset-btn:hover {
+      background: var(--accent);
+      border-color: rgba(102, 126, 234, 0.8);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .timer-custom {
+      margin-bottom: 30px;
+    }
+
+    .timer-custom label {
+      display: block;
+      font-size: 0.9rem;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+
+    .timer-custom input {
+      width: 100%;
+      padding: 12px 20px;
+      border-radius: 50px;
+      border: 2px solid rgba(102, 126, 234, 0.3);
+      background: rgba(21, 27, 46, 0.6);
+      color: var(--text-dark);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .timer-custom input:focus {
+      border-color: rgba(102, 126, 234, 0.8);
+      background: rgba(21, 27, 46, 0.9);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+    }
+
+    .timer-actions {
+      display: flex;
+      gap: 15px;
+    }
+
+    .timer-actions button {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .timer-start {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .timer-start:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(17, 153, 142, 0.4);
+    }
+
+    .timer-cancel {
+      background: var(--warning);
+      color: #fff;
+    }
+
+    .timer-cancel:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+    }
+
+    .timer-active-display {
+      background: rgba(102, 126, 234, 0.2);
+      padding: 15px 20px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      border: 2px solid rgba(102, 126, 234, 0.4);
+    }
+
+    .timer-active-display .timer-countdown {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #667eea;
+      margin-bottom: 5px;
+    }
+
+    .timer-active-display .timer-label {
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+
+    .timer-stop {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 2px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .timer-stop:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 768px) {
+      nav {
+        padding: 15px 20px;
+      }
+
+      nav h1 {
+        font-size: 1.5rem;
+      }
+
+      #search,
+      #frequencySearch {
+        width: 100%;
+      }
+
+      .stations,
+      .country-stations-grid {
+        grid-template-columns: 1fr;
+        padding: 20px;
+      }
+
+      .player-content {
+        padding: 15px 20px;
+      }
+
+      .player-top {
+        flex-wrap: wrap;
+      }
+
+      .player-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+
+      .player-controls {
+        flex-wrap: wrap;
+      }
+
+      .volume-control {
+        max-width: 100%;
+      }
+
+      .player-visualizer {
+        width: 100%;
+      }
+
+      #closeFav {
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <nav>
+      <h1>World Radio</h1>
+      <div class="menu">
+        <div class="search-container">
+          <input id="search" placeholder="Search by name or frequency (FM/MHz)..." />
+        </div>
+        <button id="favoritesMenu">⭐ Favorites</button>
+        <button id="sleepTimerBtn">😴 Sleep Timer</button>
+        <button id="toggleTheme">🌙 Theme</button>
+      </div>
+    </nav>
+  </header>
+
+  <div id="countriesList"></div>
+  <div class="stations" id="stations"></div>
+
+  <div id="favoritesOverlay">
+    <button id="closeFav">✕ Close</button>
+    <h2>⭐ My Favorite Stations</h2>
+    <div id="favoritesContainer"></div>
+  </div>
+  <div id="sleepTimerModal">
+    <div class="timer-content">
+      <h2>😴 Sleep Timer</h2>
+
+      <div id="timerActiveDisplay" style="display: none;" class="timer-active-display">
+        <div class="timer-countdown" id="timerCountdown">--:--</div>
+        <div class="timer-label">Remaining time</div>
+      </div>
+
+      <div id="timerSetup">
+        <div class="timer-presets">
+          <button class="timer-preset-btn" data-minutes="15">15 min</button>
+          <button class="timer-preset-btn" data-minutes="30">30 min</button>
+          <button class="timer-preset-btn" data-minutes="45">45 min</button>
+          <button class="timer-preset-btn" data-minutes="60">1 hour</button>
+          <button class="timer-preset-btn" data-minutes="90">1.5 hours</button>
+          <button class="timer-preset-btn" data-minutes="120">2 hours</button>
+        </div>
+
+        <div class="timer-custom">
+          <label for="customTimer">Custom time (minutes)</label>
+          <input type="number" id="customTimer" placeholder="Enter minutes..." min="1" max="999" />
+        </div>
+
+        <div class="timer-actions">
+          <button class="timer-start" id="startTimer">Start Timer</button>
+          <button class="timer-cancel" id="cancelTimerSetup">Cancel</button>
+        </div>
+      </div>
+
+      <div id="timerActive" style="display: none;">
+        <div class="timer-actions">
+          <button class="timer-stop" id="stopTimer">Stop Timer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="player" id="playerContainer" style="display:none;">
+    <div class="player-content">
+      <div class="player-top">
+        <div class="player-album">📻</div>
+        <div class="player-info">
+          <div class="player-station-name" id="playerStationName">Station Name</div>
+          <div class="player-station-details" id="playerStationDetails">
+            <span>🌍 Country</span>
+            <span>📡 Frequency</span>
+            <span>🎵 Bitrate</span>
+          </div>
+        </div>
+        <div class="player-actions">
+          <button class="player-minimize" id="playerMinimize">▼ Reduce</button>
+          <button class="player-close" id="playerClose">✕ Close</button>
+        </div>
+      </div>
+
+      <div class="player-controls">
+        <div class="player-buttons">
+          <button class="player-btn" id="prevBtn">⏮</button>
+          <button class="player-btn player-btn-play" id="playPauseBtn">▶</button>
+          <button class="player-btn" id="nextBtn">⏭</button>
+        </div>
+
+        <div class="player-visualizer" id="visualizer">
+          <div class="visualizer-bar"></div>
+          <div class="visualizer-bar"></div>
+          <div class="visualizer-bar"></div>
+          <div class="visualizer-bar"></div>
+          <div class="visualizer-bar"></div>
+          <div class="visualizer-bar"></div>
+          <div class="visualizer-bar"></div>
+          <div class="visualizer-bar"></div>
+          <div class="visualizer-bar"></div>
+        </div>
+
+        <div class="volume-control">
+          <span class="volume-icon">🔊</span>
+          <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="70">
+        </div>
+      </div>
+
+      <div class="playlist" id="playlistContainer"></div>
+    </div>
+  </div>
+
+  <audio id="player" preload="none" crossorigin="anonymous"></audio>
+
+  <script>
+    const API = "https://de1.api.radio-browser.info/json/stations/search";
+    const API_COUNTRIES = "https://de1.api.radio-browser.info/json/countries";
+
+    const $ = id => document.getElementById(id);
+    const stationsDiv = $("stations");
+    const searchInput = $("search");
+    const player = $("player");
+    const playerContainer = $("playerContainer");
+    const playerStationName = $("playerStationName");
+    const playerStationDetails = $("playerStationDetails");
+    const playPauseBtn = $("playPauseBtn");
+    const prevBtn = $("prevBtn");
+    const nextBtn = $("nextBtn");
+    const volumeSlider = $("volumeSlider");
+    const playerClose = $("playerClose");
+    const playerMinimize = $("playerMinimize");
+    const favoritesContainer = $("favoritesContainer");
+    const favoritesMenu = $("favoritesMenu");
+    const favoritesOverlay = $("favoritesOverlay");
+    const closeFav = $("closeFav");
+    const countriesListDiv = $("countriesList");
+    const playlistContainer = $("playlistContainer");
+    const toggleTheme = $("toggleTheme");
+    const sleepTimerBtn = $("sleepTimerBtn");
+    const sleepTimerModal = $("sleepTimerModal");
+    const timerSetup = $("timerSetup");
+    const timerActive = $("timerActive");
+    const timerActiveDisplay = $("timerActiveDisplay");
+    const timerCountdown = $("timerCountdown");
+    const customTimer = $("customTimer");
+    const startTimer = $("startTimer");
+    const stopTimer = $("stopTimer");
+    const cancelTimerSetup = $("cancelTimerSetup");
+
+    let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    let playlist = [];
+    let currentStationIndex = 0;
+    let isPlaying = false;
+    let loadedCountries = {};
+    let sleepTimerTimeout = null;
+    let sleepTimerInterval = null;
+    let sleepTimerEndTime = null;
+
+    let audioContext;
+    let analyser;
+    let dataArray;
+    let animationId;
+    let source;
+    let isAudioContextInitialized = false;
+
+    const countryFlags = {
+      'France': '🇫🇷', 'United States': '🇺🇸', 'United Kingdom': '🇬🇧', 'Germany': '🇩🇪',
+      'Spain': '🇪🇸', 'Italy': '🇮🇹', 'Japan': '🇯🇵', 'Canada': '🇨🇦',
+      'Australia': '🇦🇺', 'Brazil': '🇧🇷', 'Mexico': '🇲🇽', 'Netherlands': '🇳🇱',
+      'Belgium': '🇧🇪', 'Switzerland': '🇨🇭', 'Sweden': '🇸🇪', 'Norway': '🇳🇴',
+      'Denmark': '🇩🇰', 'Finland': '🇫🇮', 'Poland': '🇵🇱', 'Russia': '🇷🇺',
+      'China': '🇨🇳', 'India': '🇮🇳', 'South Korea': '🇰🇷', 'Argentina': '🇦🇷',
+      'Chile': '🇨🇱', 'Portugal': '🇵🇹', 'Greece': '🇬🇷', 'Turkey': '🇹🇷',
+      'Austria': '🇦🇹', 'Ireland': '🇮🇪', 'New Zealand': '🇳🇿', 'South Africa': '🇿🇦',
+      'Egypt': '🇪🇬', 'Israel': '🇮🇱', 'UAE': '🇦🇪', 'Saudi Arabia': '🇸🇦',
+      'Thailand': '🇹🇭', 'Vietnam': '🇻🇳', 'Indonesia': '🇮🇩', 'Philippines': '🇵🇭',
+      'Malaysia': '🇲🇾', 'Singapore': '🇸🇬', 'Czech Republic': '🇨🇿', 'Hungary': '🇭🇺',
+      'Romania': '🇷🇴', 'Ukraine': '🇺🇦', 'Colombia': '🇨🇴', 'Peru': '🇵🇪', 'Venezuela': '🇻🇪'
+    };
+
+    const getFlag = (country) => countryFlags[country] || '🌐';
+
+    const createEl = (tag, options = {}) => {
+      const el = document.createElement(tag);
+      if (options.class) el.className = options.class;
+      if (options.text) el.textContent = options.text;
+      if (options.html) el.innerHTML = options.html;
+      if (options.onclick) el.onclick = options.onclick;
+      return el;
+    };
+
+    const filterQualityStations = (stations) => {
+      return stations.filter(st => {
+        if (!st.url_resolved || st.url_resolved.trim() === '') return false;
+        const url = st.url_resolved.toLowerCase();
+        if (url.includes('.html') || url.includes('.php') || url.includes('.asp')) return false;
+        if (st.bitrate && st.bitrate < 32) return false;
+        if (!st.name || st.name.trim() === '' || st.name.length < 2) return false;
+        if (st.lastcheckok === 0) return false;
+        if (st.votes && st.votes < -5) return false;
+        return true;
+      })
+        .filter((st, index, self) =>
+          index === self.findIndex(s => s.url_resolved === st.url_resolved)
+        )
+        .sort((a, b) => {
+          const scoreA = (a.votes || 0) * 10 + (a.bitrate || 0) / 10;
+          const scoreB = (b.votes || 0) * 10 + (b.bitrate || 0) / 10;
+          return scoreB - scoreA;
+        });
+    };
+
+    const initAudioContext = () => {
+      if (isAudioContextInitialized) return;
+
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 64;
+        analyser.smoothingTimeConstant = 0.8;
+
+        const bufferLength = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+
+        source = audioContext.createMediaElementSource(player);
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+
+        isAudioContextInitialized = true;
+        animateVisualizer();
+        console.log('🎵 Audio visualizer initialized!');
+      } catch (e) {
+        console.error('Web Audio API error:', e);
+      }
+    };
+
+    const animateVisualizer = () => {
+      if (!analyser || !dataArray) return;
+
+      animationId = requestAnimationFrame(animateVisualizer);
+      analyser.getByteFrequencyData(dataArray);
+
+      const bars = document.querySelectorAll('.visualizer-bar');
+      const step = Math.floor(dataArray.length / bars.length);
+
+      bars.forEach((bar, i) => {
+        const dataIndex = Math.min(i * step, dataArray.length - 1);
+        const value = dataArray[dataIndex];
+        const normalized = value / 255;
+        const height = Math.max(normalized * 100, 15);
+        bar.style.height = `${height}%`;
+      });
+    };
+
+    const renderFavoritesOverlay = () => {
+      favoritesContainer.innerHTML = "";
+      if (favorites.length === 0) {
+        favoritesContainer.innerHTML = "<p style='text-align:center;padding:40px;color:#94a3b8;font-size:1.1rem;'>No favorites yet. Add some stations!</p>";
+        return;
+      }
+      favorites.forEach(st => {
+        const div = createEl("div", {
+          class: "favItem",
+          html: `<span>${st.name}</span><span style="color:#94a3b8;">${st.country}</span>`,
+          onclick: () => { playStation(st); favoritesOverlay.style.display = 'none'; }
+        });
+        favoritesContainer.appendChild(div);
+      });
+    };
+
+    const toggleFavorite = st => {
+      favorites = favorites.find(f => f.stationuuid === st.stationuuid)
+        ? favorites.filter(f => f.stationuuid !== st.stationuuid)
+        : [...favorites, st];
+      localStorage.setItem("favorites", JSON.stringify(favorites));
+    };
+
+    const updatePlayerUI = (st) => {
+      playerStationName.textContent = st.name;
+
+      let details = [];
+      details.push(`🌍 ${st.country}`);
+
+      if (st.tags && st.tags.trim() !== '') {
+        details.push(`🎵 ${st.tags.split(',')[0]}`);
+      }
+
+      if (st.tags) {
+        const freqMatch = st.tags.match(/(\d+\.?\d*)\s*(FM|MHz|AM|KHz)/i);
+        if (freqMatch) {
+          details.push(`📡 ${freqMatch[0]}`);
+        }
+      }
+
+      if (st.bitrate) {
+        details.push(`🎵 ${st.bitrate} kbps`);
+      }
+
+      playerStationDetails.innerHTML = details.map(d => `<span>${d}</span>`).join('');
+    };
+
+    const playStation = st => {
+      if (!isAudioContextInitialized) {
+        initAudioContext();
+      }
+
+      const existingIndex = playlist.findIndex(s => s.stationuuid === st.stationuuid);
+
+      if (existingIndex !== -1) {
+        currentStationIndex = existingIndex;
+      } else {
+        playlist.push(st);
+        currentStationIndex = playlist.length - 1;
+      }
+
+      player.src = st.url_resolved;
+      player.volume = volumeSlider.value / 100;
+      player.play().then(() => {
+        isPlaying = true;
+        playPauseBtn.textContent = '⏸';
+        if (audioContext && audioContext.state === 'suspended') {
+          audioContext.resume();
+        }
+      }).catch(e => {
+        console.error('Error playing:', e);
+      });
+
+      updatePlayerUI(st);
+      playerContainer.style.display = "block";
+      renderPlaylist();
+    };
+
+    const renderPlaylist = () => {
+      playlistContainer.innerHTML = "";
+      playlist.forEach((st, idx) => {
+        const div = createEl("div", {
+          class: idx === currentStationIndex ? "item active" : "item",
+          text: st.name,
+          onclick: () => {
+            currentStationIndex = idx;
+            playStation(st);
+          }
+        });
+        playlistContainer.appendChild(div);
+      });
+    };
+
+    const createStationCard = (st) => {
+      if (!st.url_resolved) return null;
+
+      let qualityBadge = '';
+      if (st.bitrate >= 128) {
+        qualityBadge = '<span style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; color: white;">HD</span>';
+      } else if (st.bitrate >= 64) {
+        qualityBadge = '<span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; color: white;">HQ</span>';
+      }
+
+      let frequencyBadge = '';
+      if (st.tags) {
+        const freqMatch = st.tags.match(/(\d+\.?\d*)\s*(FM|MHz|AM|KHz)/i);
+        if (freqMatch) {
+          frequencyBadge = `<span class="frequency-badge">📡 ${freqMatch[0]}</span>`;
+        }
+      }
+
+      const stationDiv = createEl("div", { class: "station" });
+      stationDiv.innerHTML = `
+    <h2>${st.name}${qualityBadge}</h2>
+    <p>
+      ${st.country}
+      ${st.tags ? ' | ' + st.tags.split(',')[0] : ''}
+      ${st.bitrate ? ' | ' + st.bitrate + ' kbps' : ''}
+      ${frequencyBadge}
+    </p>
+    <div class="station-actions">
+      <button class="listen">▶ Play</button>
+      <button class="fav">${favorites.find(f => f.stationuuid === st.stationuuid) ? "★" : "☆"}</button>
+    </div>
+  `;
+      stationDiv.querySelector(".listen").onclick = () => playStation(st);
+      stationDiv.querySelector(".fav").onclick = (e) => {
+        e.stopPropagation();
+        toggleFavorite(st);
+        stationDiv.querySelector(".fav").textContent = favorites.find(f => f.stationuuid === st.stationuuid) ? "★" : "☆";
+      };
+      return stationDiv;
+    };
+
+    const renderStations = data => {
+      stationsDiv.innerHTML = "";
+      const filteredData = filterQualityStations(data);
+
+      if (filteredData.length === 0) {
+        stationsDiv.innerHTML = "<p style='text-align:center;padding:40px;color:#94a3b8;font-size:1.1rem;grid-column:1/-1;'>No quality stations found. Try another search!</p>";
+        return;
+      }
+
+      filteredData.forEach(st => {
+        const card = createStationCard(st);
+        if (card) stationsDiv.appendChild(card);
+      });
+    };
+
+    const loadCountryStations = async (country, container) => {
+      if (loadedCountries[country]) return;
+
+      container.innerHTML = "<div style='text-align:center;padding:20px;'><div class='loading'></div></div>";
+
+      try {
+        const res = await fetch(`${API}?country=${encodeURIComponent(country)}&limit=100`);
+        const data = await res.json();
+        const filteredData = filterQualityStations(data);
+
+        container.innerHTML = "";
+        const grid = createEl("div", { class: "country-stations-grid" });
+
+        if (filteredData.length === 0) {
+          container.innerHTML = "<p style='text-align:center;padding:20px;color:#94a3b8;'>No quality stations available for this country.</p>";
+          return;
+        }
+
+        filteredData.slice(0, 30).forEach(st => {
+          const card = createStationCard(st);
+          if (card) grid.appendChild(card);
+        });
+
+        container.appendChild(grid);
+        loadedCountries[country] = true;
+      } catch (e) {
+        container.innerHTML = "<p style='text-align:center;padding:20px;color:#ef4444;'>Error loading stations.</p>";
+      }
+    };
+
+    const createCountryCard = (country, stationCount) => {
+      const card = createEl("div", { class: "country-card" });
+
+      const header = createEl("div", { class: "country-header" });
+      header.innerHTML = `
+    <div class="country-flag">${getFlag(country)}</div>
+    <div class="country-info">
+      <div class="country-name">${country}</div>
+      <div class="country-count">${stationCount} stations</div>
+    </div>
+    <div class="country-arrow">▶</div>
+  `;
+
+      const stationsContainer = createEl("div", { class: "country-stations" });
+
+      header.onclick = () => {
+        const isOpen = card.classList.contains('open');
+        document.querySelectorAll('.country-card.open').forEach(c => {
+          if (c !== card) c.classList.remove('open');
+        });
+
+        if (!isOpen) {
+          card.classList.add('open');
+          loadCountryStations(country, stationsContainer);
+        } else {
+          card.classList.remove('open');
+        }
+      };
+
+      card.appendChild(header);
+      card.appendChild(stationsContainer);
+      return card;
+    };
+
+    // Recherche combinée nom + fréquence
+    searchInput.addEventListener("input", async (e) => {
+      const value = e.target.value.trim();
+
+      if (value.length === 0) {
+        countriesListDiv.style.display = 'block';
+        stationsDiv.style.display = 'none';
+        return;
+      }
+
+      if (value.length < 2) return;
+
+      countriesListDiv.style.display = 'none';
+      stationsDiv.style.display = 'grid';
+      stationsDiv.innerHTML = "<div style='text-align:center;padding:40px;grid-column:1/-1;'><div class='loading'></div></div>";
+
+      try {
+        // Recherche par nom
+        const nameRes = await fetch(`${API}?name=${encodeURIComponent(value)}&limit=100`);
+        const nameData = await nameRes.json();
+
+        // Recherche par fréquence/tag
+        const freqRes = await fetch(`${API}?tag=${encodeURIComponent(value)}&limit=100`);
+        const freqData = await freqRes.json();
+
+        // Fusionner les résultats en évitant les doublons
+        const allStations = [...nameData];
+        freqData.forEach(freqStation => {
+          if (!allStations.find(s => s.stationuuid === freqStation.stationuuid)) {
+            allStations.push(freqStation);
+          }
+        });
+
+        renderStations(allStations);
+      } catch (e) {
+        stationsDiv.innerHTML = "<p style='text-align:center;padding:40px;color:#ef4444;font-size:1.1rem;grid-column:1/-1;'>Error loading stations. Please try again!</p>";
+      }
+    });
+
+    // Sleep Timer Functions
+    const formatTime = (seconds) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const updateTimerDisplay = () => {
+      if (!sleepTimerEndTime) return;
+
+      const now = Date.now();
+      const remaining = Math.max(0, Math.floor((sleepTimerEndTime - now) / 1000));
+
+      if (remaining <= 0) {
+        stopSleepTimer(true);
+        return;
+      }
+
+      timerCountdown.textContent = formatTime(remaining);
+    };
+
+    const startSleepTimer = (minutes) => {
+      if (sleepTimerTimeout) {
+        stopSleepTimer(false);
+      }
+
+      const milliseconds = minutes * 60 * 1000;
+      sleepTimerEndTime = Date.now() + milliseconds;
+
+      // Arrêter la musique après le délai
+      sleepTimerTimeout = setTimeout(() => {
+        player.pause();
+        isPlaying = false;
+        playPauseBtn.textContent = '▶';
+        stopSleepTimer(false);
+        alert('😴 Sleep timer ended! Music stopped.');
+      }, milliseconds);
+
+      // Mettre à jour l'affichage chaque seconde
+      sleepTimerInterval = setInterval(updateTimerDisplay, 1000);
+
+      // Affichage initial
+      updateTimerDisplay();
+
+      // Changer l'interface
+      timerSetup.style.display = 'none';
+      timerActive.style.display = 'block';
+      timerActiveDisplay.style.display = 'block';
+
+      sleepTimerBtn.textContent = '😴 Timer Active';
+      sleepTimerBtn.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
+    };
+
+    const stopSleepTimer = (closeModal = false) => {
+      if (sleepTimerTimeout) {
+        clearTimeout(sleepTimerTimeout);
+        sleepTimerTimeout = null;
+      }
+
+      if (sleepTimerInterval) {
+        clearInterval(sleepTimerInterval);
+        sleepTimerInterval = null;
+      }
+
+      sleepTimerEndTime = null;
+
+      // Réinitialiser l'interface
+      timerSetup.style.display = 'block';
+      timerActive.style.display = 'none';
+      timerActiveDisplay.style.display = 'none';
+      timerCountdown.textContent = '--:--';
+      customTimer.value = '';
+
+      sleepTimerBtn.textContent = '😴 Sleep Timer';
+      sleepTimerBtn.style.background = 'var(--accent)';
+
+      if (closeModal) {
+        sleepTimerModal.style.display = 'none';
+      }
+    };
+
+    // Événements Sleep Timer
+    sleepTimerBtn.onclick = () => {
+      sleepTimerModal.style.display = 'flex';
+    };
+
+    cancelTimerSetup.onclick = () => {
+      sleepTimerModal.style.display = 'none';
+    };
+
+    // Fermer en cliquant en dehors
+    sleepTimerModal.onclick = (e) => {
+      if (e.target === sleepTimerModal) {
+        sleepTimerModal.style.display = 'none';
+      }
+    };
+
+    // Boutons presets
+    document.querySelectorAll('.timer-preset-btn').forEach(btn => {
+      btn.onclick = () => {
+        const minutes = parseInt(btn.dataset.minutes);
+        startSleepTimer(minutes);
+      };
+    });
+
+    // Démarrer avec timer personnalisé
+    startTimer.onclick = () => {
+      const minutes = parseInt(customTimer.value);
+      if (minutes && minutes > 0 && minutes <= 999) {
+        startSleepTimer(minutes);
+      } else {
+        alert('Please enter a valid time (1-999 minutes)');
+      }
+    };
+
+    // Arrêter le timer
+    stopTimer.onclick = () => {
+      stopSleepTimer(true);
+    };
+
+    // Permettre Enter pour valider le custom timer
+    customTimer.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        startTimer.click();
+      }
+    });
+
+    const loadCountries = async () => {
+      try {
+        const res = await fetch(API_COUNTRIES);
+        const data = await res.json();
+
+        const countries = data
+          .filter(c => c.stationcount > 0)
+          .sort((a, b) => b.stationcount - a.stationcount);
+
+        const popularCountries = ['France', 'United States', 'United Kingdom', 'Germany', 'Spain', 'Italy', 'Japan', 'Canada', 'Australia', 'Brazil'];
+
+        const popular = countries.filter(c => popularCountries.includes(c.name));
+        const others = countries.filter(c => !popularCountries.includes(c.name));
+
+        [...popular, ...others].forEach(c => {
+          const card = createCountryCard(c.name, c.stationcount);
+          countriesListDiv.appendChild(card);
+        });
+
+      } catch (e) {
+        console.error('Error loading countries:', e);
+        countriesListDiv.innerHTML = "<p style='text-align:center;padding:40px;color:#ef4444;'>Error loading countries.</p>";
+      }
+    };
+
+    // Player controls
+    playPauseBtn.onclick = () => {
+      if (isPlaying) {
+        player.pause();
+        isPlaying = false;
+        playPauseBtn.textContent = '▶';
+      } else {
+        player.play();
+        isPlaying = true;
+        playPauseBtn.textContent = '⏸';
+      }
+    };
+
+    prevBtn.onclick = () => {
+      if (playlist.length === 0) return;
+      currentStationIndex = (currentStationIndex - 1 + playlist.length) % playlist.length;
+      playStation(playlist[currentStationIndex]);
+    };
+
+    nextBtn.onclick = () => {
+      if (playlist.length === 0) return;
+      currentStationIndex = (currentStationIndex + 1) % playlist.length;
+      playStation(playlist[currentStationIndex]);
+    };
+
+    volumeSlider.oninput = (e) => {
+      player.volume = e.target.value / 100;
+    };
+
+    playerClose.onclick = () => {
+      player.pause();
+      isPlaying = false;
+      playerContainer.style.display = 'none';
+      playerContainer.classList.remove('minimized');
+      document.body.classList.remove('player-minimized');
+      playPauseBtn.textContent = '▶';
+    };
+
+    playerMinimize.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const isMinimized = playerContainer.classList.contains('minimized');
+      if (isMinimized) {
+        playerContainer.classList.remove('minimized');
+        document.body.classList.remove('player-minimized');
+        playerMinimize.textContent = '▼ Reduce';
+      } else {
+        playerContainer.classList.add('minimized');
+        document.body.classList.add('player-minimized');
+        playerMinimize.textContent = '▲ Expand';
+      }
+    };
+
+    player.onended = () => {
+      if (playlist.length > 1) {
+        nextBtn.click();
+      } else {
+        isPlaying = false;
+        playPauseBtn.textContent = '▶';
+      }
+    };
+
+    player.onplay = () => {
+      isPlaying = true;
+      playPauseBtn.textContent = '⏸';
+    };
+
+    player.onpause = () => {
+      isPlaying = false;
+      playPauseBtn.textContent = '▶';
+    };
+
+    favoritesMenu.onclick = () => {
+      renderFavoritesOverlay();
+      favoritesOverlay.style.display = "flex";
+    };
+
+    closeFav.onclick = () => favoritesOverlay.style.display = "none";
+
+    toggleTheme.onclick = () => {
+      document.body.classList.toggle("light");
+      toggleTheme.textContent = document.body.classList.contains("light") ? "☀️ Theme" : "🌙 Theme";
+    };
+
+    stationsDiv.style.display = 'none';
+    loadCountries();
+  </script>
+</body>
+
+</html>
