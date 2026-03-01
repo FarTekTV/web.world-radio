@@ -4,7 +4,7 @@
 
 ![World Radio Banner](https://img.shields.io/badge/🌍_World_Radio-Stream_the_World-667eea?style=for-the-badge&labelColor=0a0e1a)
 
-![License](https://img.shields.io/badge/license-Apache%202.0-c8ff00?style=flat-square)(License)
+![License](https://img.shields.io/badge/License-Apache%202.0-c8ff00?style=flat-square)
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
